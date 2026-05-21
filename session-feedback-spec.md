@@ -233,14 +233,19 @@ function doGet(e) {
     // safeguarding json parse
     let data = {}
     try{
-      date = JSON.parse(e.parameter.payload);
+      data = JSON.parse(e.parameter.payload);
     } catch {
       return respond({error: 'invalid payload'})
     }
     // const data = JSON.parse(e.parameter.payload);
 
     const { token, session } = data;
+    Logger.log("RAW PAYLOAD: " + e.parameter.payload);
+    Logger.log("PARSED DATA: " + JSON.stringify(data));
+    Logger.log("token: " + token);
+    Logger.log("session: " + session);
 
+    
     if (!token || !session) return respond({ error: 'missing params' });
     
     // const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(session);
@@ -250,15 +255,17 @@ function doGet(e) {
 
     const rows = sheet.getDataRange().getValues();
 
-    const updatedIndex = headers.indexOf('updated_at');
-    if (updatedIndex !== -1) {
-      sheet.getRange(i + 1, updatedIndex + 1).setValue(now);
-    }
+    
 
     const headers = rows[0];
     const tokenCol = headers.indexOf('token');
 
     if (tokenCol === -1) return respond({ error: 'token column missing' }); // checks if tokenCol actually exists
+
+    // const updatedIndex = headers.indexOf('updated_at');
+    // if (updatedIndex !== -1) {
+    //   sheet.getRange(i + 1, updatedIndex + 1).setValue(now);
+    // }
 
     const now = new Date().toISOString();
     
@@ -293,25 +300,6 @@ function doGet(e) {
   }
   return respond({ open: FORM_OPEN, response: null });
 }
-```
-
----
-
-## Configuring `index.html`
-
-All session-specific settings are in the `CONFIG` block (~line 564):
-
-```javascript
-const CONFIG = {
-  appsScriptUrl: 'https://script.google.com/macros/s/.../exec',
-  sessionName:   'DataRobot GenAI and Agentic offering',  // must match Sheet tab name exactly
-  sessionDateTime: 'May 7, 2026',
-  topics: [
-    'Agentic use cases',
-    'Agent Application Templates',
-    // ...
-  ]
-};
 ```
 
 Session name and date can also be overridden per-link via URL params:
