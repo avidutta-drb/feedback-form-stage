@@ -191,20 +191,26 @@ The current version of `Code.gs` is maintained as a separate file (`Code.gs`) do
 Key constants at the top:
 
 ```javascript
-const SHEET_ID        = 'YOUR_SHEET_ID_HERE';
-const FORM_OPEN       = true;
-const CLOSE_DATE      = '2026-05-14';          // ISO YYYY-MM-DD — auto-closes after this date
-const NOTIFY_EMAIL    = 'olga.shpyrko@datarobot.com';
-const SESSION_DISPLAY = 'DataRobot GenAI and Agentic offering';
-const HISTORY_TAB     = 'History';
+const FEEDBACK_SHEET_ID   = 'YOUR_SHEET_ID_HERE';
+const FEEDBACK_TAB_NAME = 'TAB NAME IN THE SHEET'
+// const FORM_OPEN       = true;
+const CLOSE_DATE      = '2026-05-22';          // ISO YYYY-MM-DD — auto-closes after this date
+// const NOTIFY_EMAIL    = 'olga.shpyrko@datarobot.com';
+// const SESSION_DISPLAY = 'DataRobot GenAI and Agentic offering';
+// const HISTORY_TAB     = 'History';
 
 // Legacy minimal version (no notifications, no history):
-const SHEET_ID  = 'YOUR_SHEET_ID_HERE';
-const FORM_OPEN = true;
+// const SHEET_ID  = 'YOUR_SHEET_ID_HERE';
+// const FORM_OPEN = true;
 
+// ------- Get function -----
 function doGet(e) {
   const callback = e.parameter.callback;
-
+  const FORM_OPEN = new Date() <= new Date(CLOSE_DATE);
+  const sheet = SpreadsheetApp.openById(FEEDBACK_SHEET_ID).getSheetByName(FEEDBACK_TAB_NAME);
+  
+  if (!sheet) return respond({ error: 'session not found' });
+  
   function respond(obj) {
     const json = JSON.stringify(obj);
     if (callback) {
@@ -219,16 +225,43 @@ function doGet(e) {
 
   // Submit action
   if (e.parameter.action === 'submit') {
+    
+    
+
     if (!FORM_OPEN) return respond({ error: 'form closed' });
-    const data = JSON.parse(e.parameter.payload);
+    
+    // safeguarding json parse
+    let data = {}
+    try{
+      date = JSON.parse(e.parameter.payload);
+    } catch {
+      return respond({error: 'invalid payload'})
+    }
+    // const data = JSON.parse(e.parameter.payload);
+
     const { token, session } = data;
+
     if (!token || !session) return respond({ error: 'missing params' });
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(session);
-    if (!sheet) return respond({ error: 'session not found' });
+    
+    // const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(session);
+    // const sheet = SpreadsheetApp.openById(FEEDBACK_SHEET_ID).getSheetByName(FEEDBACK_TAB_NAME);
+    
+    
+
     const rows = sheet.getDataRange().getValues();
+
+    const updatedIndex = headers.indexOf('updated_at');
+    if (updatedIndex !== -1) {
+      sheet.getRange(i + 1, updatedIndex + 1).setValue(now);
+    }
+
     const headers = rows[0];
     const tokenCol = headers.indexOf('token');
+
+    if (tokenCol === -1) return respond({ error: 'token column missing' }); // checks if tokenCol actually exists
+
     const now = new Date().toISOString();
+    
     for (let i = 1; i < rows.length; i++) {
       if (String(rows[i][tokenCol]) === String(token)) {
         headers.forEach((h, idx) => {
@@ -245,7 +278,8 @@ function doGet(e) {
   const token = e.parameter.token;
   const session = e.parameter.session;
   if (!token || !session) return respond({ error: 'missing params' });
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(session);
+  // const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(session);
+  
   if (!sheet) return respond({ error: 'session not found' });
   const rows = sheet.getDataRange().getValues();
   const headers = rows[0];
