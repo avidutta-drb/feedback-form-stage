@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Session Feedback</title>
+<title>Session Feedback </title>
 <style>
   /* ── CONFIG: set APPS_SCRIPT_URL before deploying ── */
   /* See <script> block at bottom */
@@ -563,7 +563,7 @@
    CONFIG — edit before deploying
    ════════════════════════════════════════════════ */
 const CONFIG = {
-  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbyM06KDVAUm6ahzx-X4bdT0dY04x2rkY4GmJrVRWF3RY0rQ77xIjfofAYGJWoscDOkfjw/exec',
+  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbwsqd981pdSA_ql3GW03ppGN5FZdav6Df4MISglAwwHk8s87i7AOImdtkh1MV-unCrtBQ/exec',
 
   /* Default session info (overridden by URL params if present) */
   sessionName: 'DataRobot GenAI and Agentic offering',
@@ -662,7 +662,8 @@ function submitForm() {
 
   const payload = {
     token: TOKEN,
-    session: SESSION || CONFIG.sessionName,
+    // session: SESSION || CONFIG.sessionName,
+    session: SESSION, 
     q1_score: selectedScore,
     q2_topics: getTopics(),
     q3_improvements: document.getElementById('q3').value.trim(),
@@ -717,10 +718,20 @@ function jsonp(url, onSuccess, onError) {
 
 function init() {
   /* Set session info from URL params or config */
-  const sName = params.get('session_name') || CONFIG.sessionName;
-  const sDate = params.get('session_date') || CONFIG.sessionDateTime;
-  document.getElementById('session-name').textContent = sName;
-  document.getElementById('session-meta').textContent = sDate;
+  // const sName = params.get('session_name') || CONFIG.sessionName;
+  // const sDate = params.get('session_date') || CONFIG.sessionDateTime; 
+  // document.getElementById('session-name').textContent = sName;
+  // document.getElementById('session-meta').textContent = sDate;
+  // removed because we want to fetch it from BE. Below two line are added
+
+  
+  if (!TOKEN || !SESSION) {
+    show('state-invalid');
+    return;
+  }
+
+  document.getElementById('session-name').textContent = 'Loading..';
+  document.getElementById('session-meta').textContent = '';
 
   /* Build topic checkboxes */
   const grid = document.getElementById('topics-grid');
@@ -743,19 +754,31 @@ function init() {
   });
   grid.appendChild(other);
 
-  if (!TOKEN) {
-    show('state-invalid');
-    return;
-  }
+  // if (!TOKEN) {
+  //   show('state-invalid');
+  //   return;
+  // }
 
   /* Load existing response via JSONP (bypasses CORS) */
-  const sessionKey = SESSION || CONFIG.sessionName;
+  const sessionKey = SESSION; // || CONFIG.sessionName;
   jsonp(
     CONFIG.appsScriptUrl + '?token=' + encodeURIComponent(TOKEN) + '&session=' + encodeURIComponent(sessionKey),
     function(data) {
       if (data.open === false) { show('state-closed'); return; }
       if (data.error === 'token not found' || data.error === 'invalid token') { show('state-invalid'); return; }
-      if (data.error) { console.warn('Apps Script warning:', data.error); }
+      if (data.error) { 
+        console.warn('Apps Script error:', data.error); 
+        return; }
+
+       // NEW: Read session details from backend
+      if (data.SESSION_DETAILS) {
+      document.getElementById('session-name').textContent =
+        data.SESSION_DETAILS.session_name || 'Session';
+
+      document.getElementById('session-meta').textContent =
+        data.SESSION_DETAILS.start_date || '';
+    }
+
       prefill(data.response);
       show('form-area');
     },
