@@ -765,7 +765,7 @@ function init() {
     CONFIG.appsScriptUrl + '?token=' + encodeURIComponent(TOKEN) + '&session=' + encodeURIComponent(sessionKey),
     function(data) {
       if (data.open === false) { show('state-closed'); return; }
-      if (data.error === 'token not found' || data.error === 'invalid token') { show('state-invalid'); return; }
+      if (data.error === 'token not found' || data.error === 'invalid token' || data.error === 'session id not found') { show('state-invalid'); return; }
       if (data.error) { 
         console.warn('Apps Script error:', data.error); 
         return; }
