@@ -563,7 +563,7 @@
    CONFIG — edit before deploying
    ════════════════════════════════════════════════ */
 const CONFIG = {
-  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbwsqd981pdSA_ql3GW03ppGN5FZdav6Df4MISglAwwHk8s87i7AOImdtkh1MV-unCrtBQ/exec',
+  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbz1fJ4EYCz9JawqrLekCbLFF18Z2cJAq_OCH2i-9aF2Fya_Q1Iawr0lwe85R2_fyPP_/exec',
 
   /* Default session info (overridden by URL params if present) */
   sessionName: 'DataRobot GenAI and Agentic offering',
@@ -774,6 +774,8 @@ function init() {
       if (data.SESSION_DETAILS) {
       document.getElementById('session-name').textContent =
         data.SESSION_DETAILS.session_name || 'Session';
+      
+    
 
       document.getElementById('session-meta').textContent =
         data.SESSION_DETAILS.start_date || '';
