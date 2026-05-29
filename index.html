@@ -486,7 +486,7 @@
   <!-- Main form -->
   <div id="form-area">
 
-    <p class="intro">Your responses help us improve future sessions. All fields except question 1 are optional. You can return to this link and update your response until the form closes. Don't hesitate to reach out and share any feedback with Avi directly: <a href="mailto:avi.dutta@datarobot.com" style="color:#5C41FF;">avi.dutta@datarobot.com</a></p>
+    <p class="intro">Your responses help us improve future sessions. All fields except question 1 are optional. You can return to this link and update your response until the form closes. Don't hesitate to reach out and share any feedback with <a id="facilitator-email-link" href="#" style="color:#5C41FF;"></a> directly</p>
 
     <!-- Q1: Value score -->
     <div class="question">
@@ -779,6 +779,15 @@ function init() {
 
       document.getElementById('session-meta').textContent =
         data.SESSION_DETAILS.start_date || '';
+
+    // updating the email and name of facilitator
+      const emailLink = document.getElementById('facilitator-email-link');
+      const email = data.SESSION_DETAILS.facilitator_email;
+      const name = data.SESSION_DETAILS.facilitator_name || email;
+    
+      emailLink.href = 'mailto:' + email;
+      emailLink.textContent = name;
+        
     }
 
       prefill(data.response);
